@@ -7,7 +7,7 @@ namespace AutocadMcp.Core.Tests;
 public class SettingsAndAuditTests
 {
     [Fact]
-    public void Settings_CannotRaiseLimitsAboveHardCaps()
+    public void Settings_CannotRaiseLimits()
     {
         var dir = Directory.CreateTempSubdirectory();
         var file = Path.Combine(dir.FullName, "settings.json");
@@ -16,9 +16,36 @@ public class SettingsAndAuditTests
         var s = ConnectorSettings.Load(file, out var warning);
 
         Assert.Null(warning);
-        Assert.Equal(Limits.HardMaxEntities, s.MaxEntities);
+        Assert.Equal(Limits.Default.MaxEntities, s.MaxEntities); // can only lower (docs/SECURITY.md, S6)
         Assert.Equal(300, s.RequestTimeoutSeconds);
         Assert.Equal(ConnectorSettings.DefaultOutputFolder(), s.OutputFolder); // relative path ignored
+    }
+
+    [Fact]
+    public void Settings_CanLowerMaxEntities()
+    {
+        var s = new ConnectorSettings { MaxEntities = 100 }.Clamp();
+        Assert.Equal(100, s.MaxEntities);
+        Assert.Equal(100, s.ToLimits().MaxEntities);
+    }
+
+    [Theory]
+    [InlineData("\\\\server\\share\\out")]
+    [InlineData("\\\\?\\UNC\\server\\share\\out")]
+    [InlineData("//server/share/out")]
+    [InlineData("relative\\path")]
+    [InlineData("")]
+    public void OutputFolder_NetworkOrRelative_FallsBackToDefault(string folder)
+    {
+        var s = new ConnectorSettings { OutputFolder = folder }.Clamp();
+        Assert.Equal(ConnectorSettings.DefaultOutputFolder(), s.OutputFolder);
+    }
+
+    [Fact]
+    public void OutputFolder_LocalFullPath_IsKept()
+    {
+        var local = Path.Combine(Path.GetTempPath(), "mcp-out");
+        Assert.Equal(local, new ConnectorSettings { OutputFolder = local }.Clamp().OutputFolder);
     }
 
     [Fact]

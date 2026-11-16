@@ -9,9 +9,9 @@ public static class PathGuard
 {
     private static readonly HashSet<string> ReservedNames = new(StringComparer.OrdinalIgnoreCase)
     {
-        "CON", "PRN", "AUX", "NUL",
-        "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
-        "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
+        "CON", "PRN", "AUX", "NUL", "CONIN$", "CONOUT$",
+        "COM0", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "COM¹", "COM²", "COM³",
+        "LPT0", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9", "LPT¹", "LPT²", "LPT³",
     };
 
     // Characters Windows refuses in file names, checked explicitly so behaviour is the same on every OS.
@@ -57,7 +57,8 @@ public static class PathGuard
         }
 
         var stem = name[..^4];
-        var deviceStem = stem.Split('.')[0];
+        // Windows ignores trailing spaces before the extension: "CON .dwg" is still the CON device.
+        var deviceStem = stem.Split('.')[0].TrimEnd(' ');
         if (ReservedNames.Contains(deviceStem))
         {
             error = "это зарезервированное имя Windows";

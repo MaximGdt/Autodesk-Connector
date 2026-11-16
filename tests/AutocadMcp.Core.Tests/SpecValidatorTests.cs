@@ -135,4 +135,12 @@ public class SpecValidatorTests
 
         Assert.True(Check(spec).Count <= 26);
     }
+
+    [Fact]
+    public void ErrorListIsCapped_InsideOnePolyline()
+    {
+        var points = Enumerable.Range(0, 5000).Select(_ => new Point2(double.NaN, 0)).ToList();
+        var errors = Check(One(new EntitySpec { Type = "polyline", Points = points }));
+        Assert.True(errors.Count <= 26, $"{errors.Count} errors");
+    }
 }

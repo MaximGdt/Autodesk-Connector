@@ -92,7 +92,10 @@ public class ProtocolTests
     public void PipeName_IsSafeAndPerUser()
     {
         var name = PipeNames.ForCurrentUser();
-        Assert.Matches("^AutocadMcp\\.v1\\.[A-Za-z0-9_.-]+\\.[0-9]+$", name);
+        Assert.Matches("^AutocadMcp\\.[A-Za-z0-9_.-]+\\.[0-9]+$", name);
+        // No protocol version in the name: otherwise mismatched builds never meet and the user
+        // gets "no connection" instead of "protocol_mismatch".
+        Assert.DoesNotContain($".v{PipeRequest.CurrentProtocol}.", name);
         Assert.Equal("____.a-b", PipeNames.Sanitize("Иван.a-b"));
     }
 

@@ -7,6 +7,9 @@ namespace AutocadMcp.Core.Protocol;
 /// The pipe name is per Windows user and per logon session, so two people on one
 /// terminal server never reach each other's AutoCAD. Access is additionally restricted
 /// to the current user by PipeOptions.CurrentUserOnly on both ends (see docs/SECURITY.md, S2).
+/// The protocol version is deliberately NOT part of the name: parts from incompatible
+/// builds must still connect, so the plugin can answer "protocol_mismatch" instead of
+/// the misleading "no connection".
 /// </summary>
 public static partial class PipeNames
 {
@@ -14,7 +17,7 @@ public static partial class PipeNames
     {
         var user = Sanitize(Environment.UserName);
         var session = Process.GetCurrentProcess().SessionId;
-        return $"AutocadMcp.v{PipeRequest.CurrentProtocol}.{user}.{session}";
+        return $"AutocadMcp.{user}.{session}";
     }
 
     public static string Sanitize(string value)

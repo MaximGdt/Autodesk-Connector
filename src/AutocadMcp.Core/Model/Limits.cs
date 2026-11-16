@@ -2,13 +2,11 @@ namespace AutocadMcp.Core.Model;
 
 /// <summary>
 /// Size limits that keep AutoCAD responsive and stop runaway requests.
-/// Settings may LOWER these, never raise them above the hard caps (see ConnectorSettings).
+/// The settings file may only LOWER MaxEntities; nothing here can be raised without
+/// changing this file, which needs Maxim's review (CODEOWNERS, docs/SECURITY.md S6).
 /// </summary>
 public sealed record Limits
 {
-    public const int HardMaxEntities = 20_000;
-    public const int HardMaxTotalVertices = 200_000;
-
     public int MaxEntities { get; init; } = 5_000;
     public int MaxLayersPerRequest { get; init; } = 200;
     public int MaxPolylineVertices { get; init; } = 10_000;

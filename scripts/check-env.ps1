@@ -41,6 +41,26 @@ if ($sdks -match '^8\.') {
 $git = (& git --version) 2>$null
 if ($git) { Add-Check 'Git' 'OK' $git '' } else { Add-Check 'Git' 'НЕТ' 'Нужен для сохранения шагов и отката' 'winget install Git.Git' }
 
+# 4а. Git знает автора коммитов (агенту git config запрещён, это делает человек)
+if ($git) {
+    $gitName = (& git config user.name) 2>$null
+    $gitEmail = (& git config user.email) 2>$null
+    if ($gitName -and $gitEmail) {
+        Add-Check 'Git: автор коммитов' 'OK' "$gitName <$gitEmail>" ''
+    } else {
+        Add-Check 'Git: автор коммитов' 'НЕТ' 'Git не знает имя и почту, первый коммит не получится' 'Человек сам вводит: git config --global user.name "Имя Фамилия" и git config --global user.email "почта, как в GitHub"'
+    }
+}
+
+# 4б. Папка проекта — git-репозиторий, а не распакованный ZIP (нужны ветка dev, точки отката и pull request)
+$repoRoot = Split-Path -Parent $PSScriptRoot
+$inRepo = (& git -C $repoRoot rev-parse --is-inside-work-tree) 2>$null
+if ($inRepo -eq 'true') {
+    Add-Check 'Папка проекта в Git' 'OK' $repoRoot ''
+} else {
+    Add-Check 'Папка проекта в Git' 'НЕТ' 'Похоже, проект распакован из ZIP: нет истории Git' 'Скачай проект командой git clone по ссылке от Максима и открой эту папку'
+}
+
 # 5. Node.js (только для упаковки, этап 6)
 $node = (& node --version) 2>$null
 if ($node) { Add-Check 'Node.js (этап 6)' 'OK' $node '' } else { Add-Check 'Node.js (этап 6)' 'ПОЗЖЕ' 'Понадобится только для упаковки .mcpb' 'winget install OpenJS.NodeJS.LTS' }

@@ -40,6 +40,15 @@
       "Bash(git push --force-with-lease:*)",
       "Bash(git clean:*)",
       "Bash(git config:*)",
+      "Bash(git branch -D:*)",
+      "Bash(git branch -d:*)",
+      "Bash(git branch --delete:*)",
+      "Bash(git branch -f:*)",
+      "Bash(git branch --force:*)",
+      "Bash(git tag -d:*)",
+      "Bash(git tag --delete:*)",
+      "Bash(git tag -f:*)",
+      "Bash(git tag --force:*)",
       "Bash(rm -rf:*)",
       "Bash(rm -r:*)",
       "Bash(rmdir:*)",
@@ -63,6 +72,7 @@
       "Edit(./.claude/settings.json)",
       "Edit(./.github/**)",
       "Edit(./Directory.Packages.props)",
+      "Edit(./Directory.Build.props)",
       "Edit(./global.json)",
       "Read(./**/.env)"
     ]

@@ -70,8 +70,9 @@ npx -y '@anthropic-ai/mcpb@2.1.2' pack (Join-Path $artifacts 'mcpb') (Join-Path 
 if ($LASTEXITCODE -ne 0) { throw '.mcpb не собрался' }
 
 $outputs = Get-ChildItem $artifacts -File | Where-Object { $_.Extension -in '.exe', '.mcpb' }
-$outputs | ForEach-Object { "{0}  {1}" -f (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower(), $_.Name } |
-    Set-Content -Encoding UTF8 (Join-Path $artifacts 'SHA256SUMS.txt')
+# Без BOM и с переводом строки LF, чтобы файл читали и sha256sum -c, и Get-FileHash.
+$sums = $outputs | ForEach-Object { "{0}  {1}" -f (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower(), $_.Name }
+[IO.File]::WriteAllText((Join-Path $artifacts 'SHA256SUMS.txt'), ((@($sums) -join "`n") + "`n"), $utf8NoBom)
 
 Write-Host ''
 Write-Host 'ГОТОВО. В папке artifacts:'
