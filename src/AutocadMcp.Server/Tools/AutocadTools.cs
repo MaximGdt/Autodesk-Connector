@@ -22,13 +22,13 @@ public sealed class AutocadTools(PipeClient client)
     [Description("List the layers of the open drawing with color, lineweight and on/frozen/locked state. Use before editing an existing drawing so new geometry follows its layer conventions.")]
     public Task<string> ListLayers(CancellationToken ct) => Call(ToolNames.ListLayers, null, ct);
 
-    [McpServerTool(Name = ToolNames.CreateLayer, ReadOnly = false, Destructive = false, Idempotent = true, OpenWorld = false, Title = "AutoCAD: create layer")]
+    [McpServerTool(Name = ToolNames.CreateLayer, ReadOnly = false, Destructive = true, Idempotent = true, OpenWorld = false, Title = "AutoCAD: create layer")]
     [Description("Create a layer, or update color/lineweight of an existing one. Locked layers are refused. To create several layers together with geometry, prefer build_drawing.")]
     public Task<string> CreateLayer(
         [Description("The layer to create or update.")] LayerSpec layer,
         CancellationToken ct) => Call(ToolNames.CreateLayer, layer, ct);
 
-    [McpServerTool(Name = ToolNames.BuildDrawing, ReadOnly = false, Destructive = false, OpenWorld = false, Title = "AutoCAD: draw")]
+    [McpServerTool(Name = ToolNames.BuildDrawing, ReadOnly = false, Destructive = true, OpenWorld = false, Title = "AutoCAD: draw")]
     [Description("Draw layers and entities (line, polyline, circle, arc, text) in model space of the open drawing. The whole batch is validated first and applied as ONE transaction: if anything is invalid nothing is drawn and the answer lists every problem. Put a whole drawing (or a large part of it) in one call rather than many small calls. Coordinates are in drawing units: check units with autocad_status. Returns the handles of created entities.")]
     public Task<string> BuildDrawing(
         [Description("Layers and entities to draw.")] DrawingSpec spec,

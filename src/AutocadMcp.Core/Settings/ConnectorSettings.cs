@@ -54,15 +54,42 @@ public sealed record ConnectorSettings
 
     public ConnectorSettings Clamp()
     {
-        var folder = string.IsNullOrWhiteSpace(OutputFolder) || !Path.IsPathFullyQualified(OutputFolder)
-            ? DefaultOutputFolder()
-            : OutputFolder;
+        var folder = IsAllowedOutputFolder(OutputFolder) ? OutputFolder : DefaultOutputFolder();
 
         return this with
         {
             OutputFolder = folder,
-            MaxEntities = Math.Clamp(MaxEntities, 1, Limits.HardMaxEntities),
+            MaxEntities = Math.Clamp(MaxEntities, 1, Limits.Default.MaxEntities),
             RequestTimeoutSeconds = Math.Clamp(RequestTimeoutSeconds, 5, 300),
         };
+    }
+
+    /// <summary>Only a full LOCAL path: no UNC (\\server\share, \\?\...) and no mapped network drive.</summary>
+    public static bool IsAllowedOutputFolder(string? folder)
+    {
+        if (string.IsNullOrWhiteSpace(folder) || !Path.IsPathFullyQualified(folder))
+        {
+            return false;
+        }
+
+        if (folder.StartsWith(@"\\", StringComparison.Ordinal) || folder.StartsWith("//", StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        if (!OperatingSystem.IsWindows())
+        {
+            return true;
+        }
+
+        try
+        {
+            var root = Path.GetPathRoot(folder);
+            return string.IsNullOrEmpty(root) || new DriveInfo(root).DriveType != DriveType.Network;
+        }
+        catch (System.Exception ex) when (ex is ArgumentException or IOException or UnauthorizedAccessException)
+        {
+            return false;
+        }
     }
 }

@@ -40,7 +40,7 @@
 
 ## Жёсткие правила (нарушать нельзя ни при каких условиях)
 
-1. **Не трогай защищённые файлы:** `docs/SECURITY.md`, `tests/AutocadMcp.SecurityTests/**`, `.claude/settings.json`, `.github/**`, `Directory.Packages.props`, `Directory.Build.props`, `global.json`. Часть из них заблокирована настройками. Остальные проверяет ревью Максима, но правило действует для всех.
+1. **Не трогай защищённые файлы:** `docs/SECURITY.md`, `tests/AutocadMcp.SecurityTests/**`, `.claude/settings.json`, `.github/**`, `Directory.Packages.props`, `Directory.Build.props`, `global.json`. Они заблокированы настройками и проверяются ревью Максима. Файлы с особыми правами (`Core/Audit/AuditLog.cs`, `Plugin/Handlers/SaveDwgHandler.cs`, `Core/Model/Limits.cs`, `Core/Settings/`, `Plugin/MainThreadDispatcher.cs`, `Plugin/PipeHost.cs`) меняй только когда этого требует `PLAN.md`, и в отчёте ставь «⚠️ требует ревью Максима».
 2. **Не ослабляй проверки:** никаких `Skip`, удалённых или закомментированных тестов, ослабленных `Assert`, отключённых предупреждений (`NoWarn`, `#pragma warning disable`), поднятых лимитов.
 3. **Не добавляй NuGet-пакеты** и источники пакетов.
 4. **Никогда не пиши код, который:** выполняет команды AutoCAD по строке или LISP (`SendStringToExecute`, `Editor.Command`, `ResultBuffer`); запускает процессы; ходит в сеть; пишет или удаляет файлы (кроме существующих `AuditLog` и `SaveDwgHandler`); загружает код на лету; использует `DllImport`/`unsafe`; трогает реестр. Полный список с причинами — `docs/SECURITY.md`.

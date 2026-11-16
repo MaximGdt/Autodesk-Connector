@@ -108,7 +108,11 @@ public class GuardrailTests
             "Edit(./tests/AutocadMcp.SecurityTests/**)",
             "Edit(./.claude/settings.json)",
             "Edit(./Directory.Packages.props)",
+            "Edit(./Directory.Build.props)",
+            "Edit(./global.json)",
             "Edit(./.github/**)",
+            "Bash(git branch -D:*)",
+            "Bash(git tag -d:*)",
         ];
 
         var missing = required.Where(r => !deny.Contains(r)).ToList();
@@ -122,7 +126,12 @@ public class GuardrailTests
         string[] protectedPaths =
         [
             "/docs/SECURITY.md", "/tests/AutocadMcp.SecurityTests/", "/.claude/", "/.github/",
-            "/Directory.Packages.props", "/src/AutocadMcp.Core/Safety/", "/src/AutocadMcp.Core/ToolNames.cs",
+            "/Directory.Packages.props", "/Directory.Build.props", "/global.json",
+            "/src/AutocadMcp.Core/Safety/", "/src/AutocadMcp.Core/ToolNames.cs", "/src/AutocadMcp.Core/Protocol/",
+            // Files with special rights or that hold a safety rule:
+            "/src/AutocadMcp.Core/Audit/", "/src/AutocadMcp.Core/Settings/", "/src/AutocadMcp.Core/Model/Limits.cs",
+            "/src/AutocadMcp.Plugin/Handlers/SaveDwgHandler.cs", "/src/AutocadMcp.Plugin/PipeHost.cs",
+            "/src/AutocadMcp.Plugin/MainThreadDispatcher.cs", "/packaging/",
         ];
         var missing = protectedPaths.Where(p => !owners.Contains(p)).ToList();
         Assert.True(missing.Count == 0, "CODEOWNERS не защищает: " + string.Join(", ", missing));

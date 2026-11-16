@@ -21,7 +21,11 @@ public class ForbiddenApiTests
 
         new("S3-no-processes",
             "Запрещено запускать программы и процессы.",
-            @"\bProcess\s*\.\s*Start\b|\bProcessStartInfo\b|\bShellExecute\w*"),
+            @"\bProcess\s*\.\s*Start\b|\bProcessStartInfo\b|\bShellExecute\w*|\btypeof\s*\(\s*(global::)?(System\s*\.\s*Diagnostics\s*\.\s*)?Process\s*\)"),
+
+        new("S3-S10-no-hidden-aliases",
+            "Запрещено прятать опасные типы за псевдонимом или using static: так обходится проверка по именам.",
+            @"\busing\s+(static\s+)?(\w+\s*=\s*)?(global::)?(System\s*\.\s*(Diagnostics\s*\.\s*Process|Net|Reflection|Runtime\s*\.\s*InteropServices|Runtime\s*\.\s*Loader)|Microsoft\s*\.\s*Win32)\b"),
 
         new("S4-no-network",
             "Запрещена любая сеть: коннектор работает только локально.",
@@ -29,7 +33,7 @@ public class ForbiddenApiTests
 
         new("S8-no-dynamic-code",
             "Запрещено загружать или генерировать код на лету.",
-            @"\bAssembly\s*\.\s*Load(From|File)?\b|\bAssemblyLoadContext\b|\bCSharpScript\b|\bMicrosoft\s*\.\s*CodeAnalysis\b|\bReflection\s*\.\s*Emit\b|\bDynamicMethod\b|\bActivator\s*\.\s*CreateInstance\b|\bType\s*\.\s*GetType\s*\(|\bInvokeMember\b"),
+            @"\bAssembly\s*\.\s*Load(From|File)?\b|\bAssemblyLoadContext\b|\bCSharpScript\b|\bMicrosoft\s*\.\s*CodeAnalysis\b|\bReflection\s*\.\s*Emit\b|\bDynamicMethod\b|\bActivator\s*\.\s*CreateInstance\b|\bType\s*\.\s*GetType\s*\(|\bInvokeMember\b|\bMethodInfo\b|\bGetMethods?\s*\(|\bGetTypeInfo\b|\bCreateDelegate\b"),
 
         new("S9-no-native-code",
             "Запрещены вызовы нативного кода и unsafe.",
@@ -137,6 +141,26 @@ public class ForbiddenApiTests
     }
 
     [Fact]
+    public void CodeOnly_KeepsCodeInsideInterpolationHoles()
+    {
+        // A forbidden call must not hide inside {…} of an interpolated string.
+        var sample = """"
+            var a = $"x {Process.Start("cmd")} y";
+            var b = $@"{HttpClient.Foo()}";
+            var c = $$"""{ {{Assembly.LoadFrom(p)}} }""";
+            var d = $"{{WebClient}}";
+            var e = "Socket";
+            """";
+        var code = RepoFiles.CodeOnly(sample);
+        Assert.Contains("Process.Start(", code);
+        Assert.Contains("HttpClient.Foo()", code);
+        Assert.Contains("Assembly.LoadFrom(p)", code);
+        Assert.DoesNotContain("WebClient", code); // {{ }} is literal text, not code
+        Assert.DoesNotContain("Socket", code);
+        Assert.Equal(sample.Split('\n').Length, code.Split('\n').Length); // line numbers stay right
+    }
+
+    [Fact]
     public void Rules_CatchAKnownBadSnippet()
     {
         // Proves the patterns are alive: each must match at least one sample.
@@ -144,6 +168,8 @@ public class ForbiddenApiTests
         [
             "doc.SendStringToExecute(cmd, true, false, false);",
             "Process.Start(\"cmd.exe\");",
+            "var s = $\"{Process.Start(\"cmd.exe\")}\";",
+            "using P = System.Diagnostics.Process;",
             "using var http = new HttpClient();",
             "Assembly.LoadFrom(path);",
             "[DllImport(\"user32.dll\")]",

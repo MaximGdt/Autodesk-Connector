@@ -34,8 +34,11 @@ public sealed class Commands
     [CommandMethod("MCPSTART")]
     public void Start()
     {
-        PluginApp.Host?.Start();
-        PluginApp.Write("\n[Claude] Коннектор включён.\n");
+        var host = PluginApp.Host;
+        host?.Start();
+        PluginApp.Write(host is { IsRunning: true }
+            ? "\n[Claude] Коннектор включён.\n"
+            : $"\n[Claude] Коннектор не включился: {host?.LastError ?? "надстройка не загружена"}\n");
     }
 
     [CommandMethod("MCPLOG")]

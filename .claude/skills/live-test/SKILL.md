@@ -35,7 +35,7 @@ dotnet run --project src/AutocadMcp.Server -- --smoke
 Это единственный случай, когда ты меняешь файл вне репозитория. Делай только с явного «да».
 
 1. Объясни: «Чтобы Claude Desktop увидел коннектор до упаковки, я добавлю одну запись в его настройки. Сначала сделаю резервную копию. На этапе 6 верну всё как было.»
-2. Файл: `%APPDATA%\Claude\claude_desktop_config.json`. Если его нет, Claude Desktop → Настройки → Developer → Edit Config создаст его.
+2. Открой файл через Claude Desktop → Настройки → Developer → Edit Config: так откроется именно тот файл, который читает установленная версия (обычно `%APPDATA%\Claude\claude_desktop_config.json`; у версии из Microsoft Store путь другой). Работай с тем путём, который открылся.
 3. Скопируй файл рядом как `claude_desktop_config.backup-autocad-mcp.json`.
 4. **Добавь** (не заменяй остальные) в `mcpServers` запись:
    ```json

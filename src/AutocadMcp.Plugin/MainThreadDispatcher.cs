@@ -9,7 +9,8 @@ namespace AutocadMcp.Plugin;
 /// A hidden WinForms control is created on the main thread at startup; BeginInvoke on it
 /// queues work onto that thread. If the work cannot START before the timeout
 /// (e.g. AutoCAD is frozen), it is cancelled and will never run later, so a retry
-/// from Claude can never produce a duplicate drawing.
+/// from Claude can never produce a duplicate drawing. The same holds for MCPSTOP:
+/// work that has not started when the connector is stopped never runs.
 /// </summary>
 internal sealed class MainThreadDispatcher : IDisposable
 {
@@ -27,7 +28,7 @@ internal sealed class MainThreadDispatcher : IDisposable
         _ = _control.Handle; // force the window handle to exist on this thread
     }
 
-    public async Task<T> InvokeAsync<T>(Func<T> work, TimeSpan timeout)
+    public async Task<T> InvokeAsync<T>(Func<T> work, TimeSpan timeout, CancellationToken ct)
     {
         var state = Pending;
         var tcs = new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -36,7 +37,14 @@ internal sealed class MainThreadDispatcher : IDisposable
         {
             if (Interlocked.CompareExchange(ref state, Running, Pending) != Pending)
             {
-                return; // timed out before it started: drop it
+                return; // timed out or stopped before it started: drop it
+            }
+
+            if (ct.IsCancellationRequested)
+            {
+                // MCPSTOP came while this work was still waiting in the queue: never touch the drawing.
+                tcs.TrySetCanceled(ct);
+                return;
             }
 
             try
@@ -49,7 +57,8 @@ internal sealed class MainThreadDispatcher : IDisposable
             }
         }));
 
-        var finished = await Task.WhenAny(tcs.Task, Task.Delay(timeout)).ConfigureAwait(false);
+        // Task.Delay ends early (cancelled) when MCPSTOP cancels ct; WhenAny itself never throws.
+        var finished = await Task.WhenAny(tcs.Task, Task.Delay(timeout, ct)).ConfigureAwait(false);
         if (finished == tcs.Task)
         {
             return await tcs.Task.ConfigureAwait(false);
@@ -57,6 +66,7 @@ internal sealed class MainThreadDispatcher : IDisposable
 
         if (Interlocked.CompareExchange(ref state, Expired, Pending) == Pending)
         {
+            ct.ThrowIfCancellationRequested();
             throw new TimeoutException("AutoCAD не начал выполнять запрос вовремя (занят или открыт диалог).");
         }
 

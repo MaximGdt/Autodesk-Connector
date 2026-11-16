@@ -186,7 +186,7 @@ public static class SpecValidator
 
     private static void ValidatePoints(List<Point2> points, string path, Limits limits, List<string> errors)
     {
-        for (var i = 0; i < points.Count; i++)
+        for (var i = 0; i < points.Count && errors.Count < MaxReportedErrors; i++)
         {
             ValidatePoint(points[i], $"{path}[{i}]", limits, errors);
         }

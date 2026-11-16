@@ -22,6 +22,7 @@ internal sealed class PipeHost : IDisposable
     private readonly ConnectorSettings _settings;
     private CancellationTokenSource? _cts;
     private Task? _loop;
+    private Task? _stoppingLoop;
     private long _requestCount;
 
     public PipeHost(MainThreadDispatcher dispatcher, ToolRouter router, AuditLog audit, ConnectorSettings settings)
@@ -48,6 +49,13 @@ internal sealed class PipeHost : IDisposable
             return;
         }
 
+        if (_stoppingLoop is { IsCompleted: false })
+        {
+            // The previous loop still holds the pipe; a new one would fail with "channel busy".
+            LastError = "Предыдущая остановка ещё не завершилась. Подожди несколько секунд и повтори MCPSTART.";
+            return;
+        }
+
         LastError = null;
         _cts = new CancellationTokenSource();
         _loop = Task.Run(() => RunAsync(_cts.Token));
@@ -55,17 +63,29 @@ internal sealed class PipeHost : IDisposable
 
     public void Stop()
     {
-        _cts?.Cancel();
+        var cts = _cts;
+        var loop = _loop;
+        cts?.Cancel();
         try
         {
-            _loop?.Wait(TimeSpan.FromSeconds(3));
+            loop?.Wait(TimeSpan.FromSeconds(3));
         }
         catch (AggregateException)
         {
             // cancelled
         }
 
-        _cts?.Dispose();
+        // Dispose the token source only when nothing uses it any more.
+        if (loop is null || loop.IsCompleted)
+        {
+            cts?.Dispose();
+            _stoppingLoop = null;
+        }
+        else
+        {
+            _stoppingLoop = loop;
+        }
+
         _cts = null;
         _loop = null;
     }
@@ -84,8 +104,10 @@ internal sealed class PipeHost : IDisposable
                     PipeTransmissionMode.Byte,
                     PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
             }
-            catch (IOException)
+            catch (System.Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
+                // With one allowed instance .NET asks Windows for the FIRST pipe instance,
+                // so a second AutoCAD gets "access denied" (UnauthorizedAccessException), not IOException.
                 LastError = "Канал уже занят: коннектор запущен в другом окне AutoCAD. Работает только одно окно AutoCAD за раз.";
                 return;
             }
@@ -119,12 +141,15 @@ internal sealed class PipeHost : IDisposable
                 return; // client closed the connection
             }
 
-            var response = await HandleAsync(json).ConfigureAwait(false);
-            await FrameCodec.WriteAsync(server, JsonWire.Serialize(response), ct).ConfigureAwait(false);
+            var response = await HandleAsync(json, ct).ConfigureAwait(false);
+
+            // Answer even after MCPSTOP, so Claude hears "connector_stopped" instead of a broken pipe.
+            using var writeTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            await FrameCodec.WriteAsync(server, JsonWire.Serialize(response), writeTimeout.Token).ConfigureAwait(false);
         }
     }
 
-    private async Task<PipeResponse> HandleAsync(string json)
+    private async Task<PipeResponse> HandleAsync(string json, CancellationToken ct)
     {
         Interlocked.Increment(ref _requestCount);
         var sw = Stopwatch.StartNew();
@@ -151,8 +176,13 @@ internal sealed class PipeHost : IDisposable
             {
                 var timeout = TimeSpan.FromSeconds(_settings.RequestTimeoutSeconds);
                 var req = request;
-                response = await _dispatcher.InvokeAsync(() => _router.Execute(req), timeout).ConfigureAwait(false);
+                response = await _dispatcher.InvokeAsync(() => _router.Execute(req), timeout, ct).ConfigureAwait(false);
             }
+        }
+        catch (OperationCanceledException)
+        {
+            response = PipeResponse.Failure(request?.Id ?? "", ErrorCodes.Stopped,
+                "Коннектор выключен командой MCPSTOP, запрос не выполнен. Включить снова: MCPSTART в AutoCAD.");
         }
         catch (JsonException ex)
         {

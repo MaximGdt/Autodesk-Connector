@@ -5,8 +5,8 @@ description: Собрать решение и прогнать все автот
 
 # Сборка и автотесты
 
-1. Если меняется надстройка (`src/AutocadMcp.Plugin`), убедись, что AutoCAD закрыт. Иначе DLL заблокирована и сборка упадёт с «file is being used by another process». Спроси человека: «Закрой, пожалуйста, AutoCAD (сохрани свои чертежи), напиши "готово"».
-   То же с MCP-сервером: после подключения к Claude Desktop (этап 2) Claude Desktop держит `autocad-mcp-server.exe` открытым. Если меняется `src/AutocadMcp.Server`, попроси полностью закрыть Claude Desktop (значок в трее → Выход).
+1. Если меняется надстройка (`src/AutocadMcp.Plugin`) **или ядро** (`src/AutocadMcp.Core`: его DLL лежит рядом с надстройкой), убедись, что AutoCAD закрыт. Иначе DLL заблокирована и сборка упадёт с «file is being used by another process». Спроси человека: «Закрой, пожалуйста, AutoCAD (сохрани свои чертежи), напиши "готово"».
+   То же с MCP-сервером: после подключения к Claude Desktop (этап 2) Claude Desktop держит `autocad-mcp-server.exe` и `AutocadMcp.Core.dll` рядом с ним открытыми. Если меняется `src/AutocadMcp.Server` **или** `src/AutocadMcp.Core`, попроси полностью закрыть Claude Desktop (значок в трее → Выход).
 2. Сборка (предупреждения считаются ошибками):
    ```
    dotnet build AutocadMcp.sln -c Release
