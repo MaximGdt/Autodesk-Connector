@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Runs INSIDE AutoCAD 2025 (R25.0, .NET 8). Loaded from the Autodesk bundle or with NETLOAD. -->
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <RootNamespace>AutocadMcp.Plugin</RootNamespace>
+    <AssemblyName>AutocadMcp.Plugin</AssemblyName>
+    <PlatformTarget>x64</PlatformTarget>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Avoid name clashes with AutoCAD types (Application, Color). -->
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Official Autodesk reference assemblies. AutoCAD provides the real DLLs at runtime,
+         so they are never copied next to the plugin. -->
+    <PackageReference Include="AutoCAD.NET" ExcludeAssets="runtime" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AutocadMcp.Core\AutocadMcp.Core.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Autodesk application bundle. AutoCAD loads the plugin from
+  %APPDATA%\Autodesk\ApplicationPlugins\AutocadMcp.bundle at startup.
+  SeriesMin/SeriesMax = AutoCAD 2025 only (R25.0). Adding 2026 (R25.1) needs a test on 2026 first.
+  scripts/package.ps1 fills in the version.
+-->
+<ApplicationPackage
+    SchemaVersion="1.0"
+    AutodeskProduct="AutoCAD"
+    ProductType="Application"
+    Name="AutoCAD MCP Connector"
+    Description="Local connector between Claude Desktop and AutoCAD 2025"
+    AppVersion="__VERSION__"
+    Author="Maxim Goldt"
+    ProductCode="{6FD8FB2E-4F11-469B-A120-B035A093B6B9}"
+    UpgradeCode="{2D9D2FC1-5D96-4BEA-9FC2-676610BDAB59}">
+  <CompanyDetails Name="Autodesk-Connector (internal)" />
+  <Components Description="AutoCAD 2025">
+    <RuntimeRequirements OS="Win64" Platform="AutoCAD*" SeriesMin="R25.0" SeriesMax="R25.0" />
+    <ComponentEntry
+        AppName="AutocadMcp"
+        ModuleName="./Contents/AutocadMcp.Plugin.dll"
+        AppDescription="Claude connector: drawing tools over a local named pipe"
+        LoadOnAutoCADStartup="True" />
+  </Components>
+</ApplicationPackage>

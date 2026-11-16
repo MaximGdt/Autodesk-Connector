@@ -1,0 +1,18 @@
+<Project>
+  <!--
+    PROTECTED FILE. The only NuGet packages this project may use, with exact versions.
+    Adding or changing a package needs Maxim's review (see docs/SECURITY.md, rule S7).
+    tests/AutocadMcp.SecurityTests checks that nothing outside this list is referenced.
+  -->
+  <ItemGroup>
+    <!-- Official Autodesk reference assemblies for AutoCAD 2025 (R25.0). Compile-time only, never shipped. -->
+    <PackageVersion Include="AutoCAD.NET" Version="25.0.1" />
+    <!-- Official Model Context Protocol C# SDK. -->
+    <PackageVersion Include="ModelContextProtocol" Version="2.4.0" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+    <!-- Tests only. -->
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageVersion Include="xunit" Version="2.9.2" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+</Project>

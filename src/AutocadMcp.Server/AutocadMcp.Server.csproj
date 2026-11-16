@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The MCP server Claude Desktop starts. Talks MCP over stdio, forwards calls to the plugin over the named pipe.
+       Shipped as ONE self-contained exe (no .NET needed on the colleague's PC): see scripts/package.ps1. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>AutocadMcp.Server</RootNamespace>
+    <AssemblyName>autocad-mcp-server</AssemblyName>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ModelContextProtocol" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AutocadMcp.Core\AutocadMcp.Core.csproj" />
+  </ItemGroup>
+</Project>

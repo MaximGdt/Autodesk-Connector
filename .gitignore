@@ -1,0 +1,11 @@
+bin/
+obj/
+out/
+artifacts/
+*.user
+*.suo
+.vs/
+.idea/
+TestResults/
+*.mcpb
+.env

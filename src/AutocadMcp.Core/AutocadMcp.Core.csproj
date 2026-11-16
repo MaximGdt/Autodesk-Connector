@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Shared, AutoCAD-free code: wire protocol, input validation, path guard, audit log, settings.
+       Everything here is unit-tested without AutoCAD (tests/AutocadMcp.Core.Tests). -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>AutocadMcp.Core</RootNamespace>
+  </PropertyGroup>
+</Project>

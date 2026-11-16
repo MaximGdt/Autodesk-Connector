@@ -1,0 +1,14 @@
+# Changes to these paths need Maxim's approval before they reach main.
+# Turn on "Require review from Code Owners" in the main branch protection rule (see docs/SECURITY.md, "Настройка GitHub").
+/docs/SECURITY.md                    @MaximGdt
+/tests/AutocadMcp.SecurityTests/     @MaximGdt
+/.claude/                            @MaximGdt
+/.github/                            @MaximGdt
+/Directory.Packages.props            @MaximGdt
+/Directory.Build.props               @MaximGdt
+/global.json                         @MaximGdt
+/src/AutocadMcp.Core/Safety/         @MaximGdt
+/src/AutocadMcp.Core/ToolNames.cs    @MaximGdt
+/src/AutocadMcp.Core/Protocol/       @MaximGdt
+/src/AutocadMcp.Plugin/PipeHost.cs   @MaximGdt
+/packaging/                          @MaximGdt

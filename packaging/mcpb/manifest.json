@@ -1,0 +1,29 @@
+{
+  "manifest_version": "0.3",
+  "name": "autocad-mcp",
+  "display_name": "AutoCAD (локальный коннектор)",
+  "version": "__VERSION__",
+  "description": "Claude чертит в запущенном AutoCAD 2025 на этом компьютере: слои, линии, полилинии, окружности, дуги, тексты, сохранение DWG.",
+  "long_description": "Работает только локально, через канал, доступный текущему пользователю Windows. Нужна установленная надстройка AutocadMcp для AutoCAD 2025 (AutocadMcp-Setup.exe). Ничего не отправляет в сеть, не выполняет команды AutoCAD по строке и сохраняет файлы только в папку Документы\\AutoCAD-MCP.",
+  "author": {
+    "name": "Maxim Goldt"
+  },
+  "server": {
+    "type": "binary",
+    "entry_point": "server/autocad-mcp-server.exe",
+    "mcp_config": {
+      "command": "${__dirname}/server/autocad-mcp-server.exe",
+      "args": []
+    }
+  },
+  "tools": [
+    { "name": "autocad_status", "description": "Связь с AutoCAD и сведения об открытом чертеже" },
+    { "name": "list_layers", "description": "Список слоёв чертежа" },
+    { "name": "create_layer", "description": "Создать или изменить слой" },
+    { "name": "build_drawing", "description": "Нарисовать набор объектов одной транзакцией" },
+    { "name": "save_dwg", "description": "Сохранить копию чертежа в DWG в разрешённую папку" }
+  ],
+  "compatibility": {
+    "platforms": ["win32"]
+  }
+}

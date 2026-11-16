@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    PROTECTED. Security gate: scans the source code and project files for anything the connector
+    must never do (docs/SECURITY.md). If one of these tests is red, the build is NOT acceptable.
+    Never skip, weaken or delete these tests; changes need Maxim's review (CODEOWNERS).
+  -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\AutocadMcp.Core\AutocadMcp.Core.csproj" />
+    <ProjectReference Include="..\..\src\AutocadMcp.Server\AutocadMcp.Server.csproj" />
+  </ItemGroup>
+</Project>
